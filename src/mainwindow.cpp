@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <iostream>
 #include <QContextMenuEvent>
+#include <QListWidget>
 
 #include <QIcon>
 #include <QStyle>
@@ -24,8 +25,7 @@
 
 #include "mainwindow.h"
 
-QString imageDir[128], tempDir;
-QDir imagePath;
+
 int i, count, period;
 float anim_period = 0.5;
 bool timer_checker, shuffle_checker, comboBox_checker, image_checker, mouse_click_checker, anim_checker;
@@ -76,6 +76,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   createMenuBar();
   menuBar()->setNativeMenuBar(false);
 
+  ui->currentList->setVisible(false);
+  ui->doneList->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -178,19 +180,30 @@ void MainWindow::openClicked()
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
   showNormal();
   count = 0;
-  imagePath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+  QDir imagePath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   QStringList images = imagePath.entryList(QStringList() << "*.jpg" << "*.jpeg" << "*.bmp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.xbm" << "*.xpm" << "*.png", QDir::Files);
+
+  playlist.clear();
+  ui->currentList->clear();
+  ui->doneList->clear();
 
   foreach(QString filename, images)
   {
-    imageDir[count] = imagePath.filePath(filename);
+    QString line=imagePath.filePath(filename);
+    playlist<<line;
+    ui->currentList->addItem(line);
     count++;
   }
-  
+
   if (count > 0)
   {
-    setImage(imageDir[0]);
+//    setImage(ui->currentList[0]);
+    QListWidgetItem *item = ui->currentList->takeItem(0);
+    ui->doneList->addItem(item->text());
+    setImage(item->text());
+    delete item;
   }
+
   period=10;
   this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
   setTimer();
@@ -219,16 +232,14 @@ void MainWindow::scaleImage()
   int imageWidth=ui->imageLabel->pixmap()->width();
   int imageHeight=ui->imageLabel->pixmap()->height();
 
-
-//  statusBar()->hide();
   showFullScreen();
 
-float iWidth;
-float iHeight;
-float z;
+  float iWidth;
+  float iHeight;
+  float x,y,z;
 
-  float x=(screenWidth*1.0)/(imageWidth*1.0);
-  float y=(screenHeight*1.0)/(imageHeight*1.0);
+  x=(screenWidth*1.0)/(imageWidth*1.0);
+  y=(screenHeight*1.0)/(imageHeight*1.0);
   x<=y ? z=x:z=y;
   iWidth=imageWidth*z;
   iHeight=imageHeight*z;
@@ -266,17 +277,13 @@ void MainWindow::timerTriggered()
 //-----------------------------------------------------------------------------------------
 void MainWindow::nextImage()
 {
-  if (i == count - 1)
+  if(ui->currentList->count() >1)
   {
-    i = 0;
+    QListWidgetItem *item = ui->currentList->takeItem(0);
+    ui->doneList->addItem(item->text());
+    setImage(item->text());
+    delete item;
   }
-  else
-  {
-    i++;
-  }
-  tempDir = imageDir[i];
-  setImage(tempDir);
-
 }
 
 //-----------------------------------------------------------------------------------------
@@ -316,7 +323,6 @@ void MainWindow::contextualMenu(const QPoint &point)
 void MainWindow::pauseClicked()
 {
   stopTimer();
-//  showMaximized();
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
   showNormal();
 }
@@ -330,7 +336,6 @@ void MainWindow::continueClicked()
   this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
   showFullScreen();
   setTimer();
-
 }
 
 //-----------------------------------------------------------------------------------------

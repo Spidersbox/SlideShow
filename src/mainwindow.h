@@ -2,13 +2,14 @@
 #define SLIDESHOW_H
 
 #include <QMainWindow>
+#include <QListView>
 #include "ui_mainwindow.h"
 
 QT_USE_NAMESPACE
 //class QLabel;
 //class QScrollArea;
 //class QScrollBar;
-class QMenu;
+//class QMenu;
 
 class MainWindow : public QMainWindow
 {
@@ -20,6 +21,7 @@ public:
   ~MainWindow();
 
   QTimer *timer;
+  QStringList playlist;
 
 private:
   Ui::MainWindow *ui;
