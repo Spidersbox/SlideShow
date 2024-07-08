@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QMenu>
 #include <QMenuBar>
 #include <QLabel>
 #include <QImageReader>
@@ -6,7 +7,7 @@
 #include <QTime>
 #include <QTimer>
 #include <iostream>
-
+#include <QContextMenuEvent>
 
 #include <QIcon>
 #include <QStyle>
@@ -37,6 +38,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   ui->imageLabel->setScaledContents(true);
 
   setWindowTitle(tr("SlideShow"));
+
+// overall height and width of screen (not desktop)
+#if QT_VERSION < 0x060000
+  QDesktopWidget *mydesktop = QApplication::desktop();
+  desktopWidth = mydesktop->width(); // pixels;
+  desktopHeight = mydesktop->height(); // pixels;
+#else
+// figure it out later
+#endif
 
   // center form on screen
 #if QT_VERSION < 0x060000
@@ -84,6 +94,13 @@ void MainWindow::createMenuBar()
   /** Get the main window's menu bar on other platforms */
   appMenuBar = menuBar();
 #endif
+
+  /** Build context menu */
+//  contextMenu= new QMenu();
+//contextMenu->addMenu(tr("&File"));
+//contextMenu->addAction(openAction);
+//contextMenu->addAction(quitAction);
+  
 
   /** Configure the menus */
   QMenu *file = appMenuBar->addMenu(tr("&File"));
@@ -137,6 +154,11 @@ void MainWindow::createActions()
   connect(randomizerAction, SIGNAL(triggered()), this, SLOT(randomizerClicked()));
   connect(loopAction, SIGNAL(triggered()), this, SLOT(loopClicked()));
 
+  /** popup menu for form and imageLabel */
+  connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
+  connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
+
+//qDebug() << connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
 }
 
 //-----------------------------------------------------------------------------------------
@@ -187,25 +209,12 @@ void MainWindow::showImage(QString fileName)
 //-----------------------------------------------------------------------------------------
 void MainWindow::scaleImage()
 {
-  int screenWidth;
-  int screenHeight;
-
-//  int clientWidth=this->width();
-//  int clientHeight=this->height();
+  int screenWidth=desktopWidth;
+  int screenHeight=desktopHeight;
 
   int imageWidth=ui->imageLabel->pixmap()->width();
   int imageHeight=ui->imageLabel->pixmap()->height();
 
-#if QT_VERSION < 0x060000
-  QRect desktopRect = QApplication::desktop()->availableGeometry(this);
-  screenWidth=desktopRect.width();
-  screenHeight=desktopRect.height();
-#else
-  QScreen *screen = QGuiApplication::primaryScreen();
-  QRect  desktopRect=screen->geometry();
-  screenWidth=desktopRect.width();
-  screenHeight=desktopRect.height();
-#endif
 
 //  statusBar()->hide();
   showFullScreen();
@@ -274,6 +283,15 @@ void MainWindow::stopTimer()
     timer_checker = false;
     timer->stop();
   }
+}
+
+//-----------------------------------------------------------------------------------------
+void MainWindow::contextualMenu(const QPoint &point)
+{
+  QMenu menu(this);
+  menu.addAction(openAction);
+  menu.addAction(quitAction);
+  menu.exec(QCursor::pos());
 }
 
 //-----------------------------------------------------------------------------------------

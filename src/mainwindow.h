@@ -8,10 +8,13 @@ QT_USE_NAMESPACE
 //class QLabel;
 //class QScrollArea;
 //class QScrollBar;
+class QMenu;
 
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
+
+
 public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
@@ -22,9 +25,12 @@ private:
   Ui::MainWindow *ui;
 
   double scaleFactor;
+  int desktopWidth;
+  int desktopHeight;
 
   QMenuBar *appMenuBar;
   QImage image;
+  QMenu *contextMenu;
 //  QLabel *imageLabel;
 //  QScrollArea *scrollArea;
   QAction *openAction;
@@ -52,6 +58,7 @@ private:
   void setTimer();
   void stopTimer();
 
+//  void contextMenuEvent(QContextMenuEvent *event);
 
 private slots:
   void timerTriggered();
@@ -71,6 +78,9 @@ private slots:
   void randomizerClicked();
   /** toggle play loop switch */
   void loopClicked();
+  /** Spawn contextual menu (right mouse menu) */
+  void contextualMenu(const QPoint &point);
+//  void contextualMenu(QContextMenuEvent *event);
 
 };
 
