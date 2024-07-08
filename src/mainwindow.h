@@ -31,14 +31,15 @@ private:
   QMenuBar *appMenuBar;
   QImage image;
   QMenu *contextMenu;
-//  QLabel *imageLabel;
-//  QScrollArea *scrollArea;
   QAction *openAction;
   QAction *quitAction;
 
+  QAction *pauseAction;
+  QAction *continueAction;
+
   /** playlist submenu options */
-  QAction *editAction;
-  QAction *saveAction;
+//  QAction *editAction;
+//  QAction *saveAction;
   QAction *randomAction;
   QAction *randomizerAction;
   QAction *loopAction;
@@ -67,6 +68,10 @@ private slots:
   void openClicked();
   /** exit this app */
   void quitClicked();
+
+  /** play options */
+  void pauseClicked();
+  void continueClicked();
 
   /** show playlist editor */
   void editClicked();

@@ -95,13 +95,6 @@ void MainWindow::createMenuBar()
   appMenuBar = menuBar();
 #endif
 
-  /** Build context menu */
-//  contextMenu= new QMenu();
-//contextMenu->addMenu(tr("&File"));
-//contextMenu->addAction(openAction);
-//contextMenu->addAction(quitAction);
-  
-
   /** Configure the menus */
   QMenu *file = appMenuBar->addMenu(tr("&File"));
   file->addAction(openAction);
@@ -109,8 +102,8 @@ void MainWindow::createMenuBar()
 
   QMenu *settings = appMenuBar->addMenu(tr("&Options"));
   QMenu *submenu=settings->addMenu("&Playlist");
-  submenu->addAction(editAction);
-  submenu->addAction(saveAction);
+//  submenu->addAction(editAction);
+//  submenu->addAction(saveAction);
 
   settings->addAction(randomAction);
   settings->addAction(randomizerAction);
@@ -126,10 +119,15 @@ void MainWindow::createActions()
   quitAction = new QAction(QIcon(":/images/bt_close"), tr("E&xit"), this);
   quitAction->setToolTip(tr("Quit application"));
 
-  editAction = new QAction(QIcon(":/images/bt_edit"), tr("&Edit Playlist"), this);
-  editAction->setToolTip(tr("open the playlist editor options"));
-  saveAction = new QAction(QIcon(":/images/bt_save"), tr("&Save Playlist"), this);
-  saveAction->setToolTip(tr("save the playlist"));
+  pauseAction = new QAction(QIcon(":/images/bt_pause"), tr("&Pause"), this);
+  pauseAction->setToolTip(tr("Pause slideshow"));
+  continueAction = new QAction(QIcon(":/images/bt_play"), tr("&Continue"), this);
+  continueAction->setToolTip(tr("Continue slideshow"));
+
+//  editAction = new QAction(QIcon(":/images/bt_edit"), tr("&Edit Playlist"), this);
+//  editAction->setToolTip(tr("open the playlist editor options"));
+//  saveAction = new QAction(QIcon(":/images/bt_save"), tr("&Save Playlist"), this);
+//  saveAction->setToolTip(tr("save the playlist"));
 
   randomAction = new QAction(QIcon(":/images/bt_shuffle"), tr("&Shuffle (do it NOW)"), this);
   randomAction->setToolTip(tr("randomize the playlist now"));
@@ -148,17 +146,21 @@ void MainWindow::createActions()
   connect(openAction, SIGNAL(triggered()), this, SLOT(openClicked()));
   connect(quitAction, SIGNAL(triggered()), this, SLOT(quitClicked()));
 
-  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
-  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
+  connect(pauseAction, SIGNAL(triggered()), this, SLOT(pauseClicked()));
+  connect(continueAction, SIGNAL(triggered()), this, SLOT(continueClicked()));
+
+//  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
+//  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
   connect(randomAction, SIGNAL(triggered()), this, SLOT(randomClicked()));
   connect(randomizerAction, SIGNAL(triggered()), this, SLOT(randomizerClicked()));
   connect(loopAction, SIGNAL(triggered()), this, SLOT(loopClicked()));
 
   /** popup menu for form and imageLabel */
-  connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
-  connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
+  connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint))
+         ,this, SLOT(contextualMenu(QPoint)));
+  connect(this, SIGNAL(customContextMenuRequested(QPoint))
+         ,this, SLOT(contextualMenu(QPoint)));
 
-//qDebug() << connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
 }
 
 //-----------------------------------------------------------------------------------------
@@ -173,6 +175,8 @@ void MainWindow::quitClicked()
 void MainWindow::openClicked()
 {
   stopTimer();
+  this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
+  showNormal();
   count = 0;
   imagePath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   QStringList images = imagePath.entryList(QStringList() << "*.jpg" << "*.jpeg" << "*.bmp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.xbm" << "*.xpm" << "*.png", QDir::Files);
@@ -188,7 +192,7 @@ void MainWindow::openClicked()
     setImage(imageDir[0]);
   }
   period=10;
-  this->setStyleSheet("background:rgb(0, 0, 0);");
+  this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
   setTimer();
 }
 
@@ -288,10 +292,45 @@ void MainWindow::stopTimer()
 //-----------------------------------------------------------------------------------------
 void MainWindow::contextualMenu(const QPoint &point)
 {
-  QMenu menu(this);
-  menu.addAction(openAction);
-  menu.addAction(quitAction);
-  menu.exec(QCursor::pos());
+  QMenu mainMenu(this);
+  QMenu *fileMenu=mainMenu.addMenu(tr("&File"));
+  fileMenu->addAction(openAction);
+  fileMenu->addAction(quitAction);
+
+  QMenu *optionsMenu=mainMenu.addMenu(tr("&Options"));
+  optionsMenu->addAction(pauseAction);
+  optionsMenu->addAction(continueAction);
+
+  QMenu *settingsMenu=mainMenu.addMenu(tr("&Settings"));
+  settingsMenu->addAction(randomAction);
+  settingsMenu->addAction(randomizerAction);
+  settingsMenu->addAction(loopAction);
+
+
+  mainMenu.exec(QCursor::pos());
+}
+
+//-----------------------------------------------------------------------------------------
+
+/** pause the slideshow */
+void MainWindow::pauseClicked()
+{
+  stopTimer();
+//  showMaximized();
+  this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
+  showNormal();
+}
+
+//-----------------------------------------------------------------------------------------
+
+/** continue the slideshow */
+void MainWindow::continueClicked()
+{
+  period=10;
+  this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
+  showFullScreen();
+  setTimer();
+
 }
 
 //-----------------------------------------------------------------------------------------
