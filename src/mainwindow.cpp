@@ -76,8 +76,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   createMenuBar();
   menuBar()->setNativeMenuBar(false);
 
-  ui->currentList->setVisible(false);
-  ui->doneList->setVisible(false);
+//  ui->currentList->setVisible(false);
+//  ui->doneList->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -103,7 +103,7 @@ void MainWindow::createMenuBar()
   file->addAction(quitAction);
 
   QMenu *settings = appMenuBar->addMenu(tr("&Options"));
-  QMenu *submenu=settings->addMenu("&Playlist");
+//  QMenu *submenu=settings->addMenu("&Playlist");
 //  submenu->addAction(editAction);
 //  submenu->addAction(saveAction);
 
@@ -159,9 +159,9 @@ void MainWindow::createActions()
 
   /** popup menu for form and imageLabel */
   connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint))
-         ,this, SLOT(contextualMenu(QPoint)));
+         ,this, SLOT(contextualMenu()));
   connect(this, SIGNAL(customContextMenuRequested(QPoint))
-         ,this, SLOT(contextualMenu(QPoint)));
+         ,this, SLOT(contextualMenu()));
 
 }
 
@@ -202,6 +202,7 @@ void MainWindow::openClicked()
     ui->doneList->addItem(item->text());
     setImage(item->text());
     delete item;
+    menuBar()->setVisible(false);
   }
 
   period=10;
@@ -232,6 +233,7 @@ void MainWindow::scaleImage()
   int imageWidth=ui->imageLabel->pixmap()->width();
   int imageHeight=ui->imageLabel->pixmap()->height();
 
+  menuBar()->setVisible(false);
   showFullScreen();
 
   float iWidth;
@@ -277,13 +279,33 @@ void MainWindow::timerTriggered()
 //-----------------------------------------------------------------------------------------
 void MainWindow::nextImage()
 {
-  if(ui->currentList->count() >1)
+  if(ui->currentList->count() >0)
   {
     QListWidgetItem *item = ui->currentList->takeItem(0);
     ui->doneList->addItem(item->text());
     setImage(item->text());
     delete item;
   }
+  else // end of slideshow,
+  {
+    // randomize playlist and start again  
+    if(loopAction->isChecked())
+    {
+     if(randomizerAction->isChecked())
+      {
+        randomClicked();
+      }
+      // just checking if there are images in the currentList
+      if(ui->currentList->count() >0)
+      {
+        QListWidgetItem *item = ui->currentList->takeItem(0);
+        ui->doneList->addItem(item->text());
+        setImage(item->text());
+        delete item;
+        setTimer();
+      }
+    }// endif loopaction
+  }// end else
 }
 
 //-----------------------------------------------------------------------------------------
@@ -297,7 +319,8 @@ void MainWindow::stopTimer()
 }
 
 //-----------------------------------------------------------------------------------------
-void MainWindow::contextualMenu(const QPoint &point)
+//void MainWindow::contextualMenu(const QPoint &point)
+void MainWindow::contextualMenu()
 {
   QMenu mainMenu(this);
   QMenu *fileMenu=mainMenu.addMenu(tr("&File"));
@@ -324,6 +347,7 @@ void MainWindow::pauseClicked()
 {
   stopTimer();
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
+  menuBar()->setVisible(true);
   showNormal();
 }
 
@@ -334,6 +358,7 @@ void MainWindow::continueClicked()
 {
   period=10;
   this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
+    menuBar()->setVisible(false);
   showFullScreen();
   setTimer();
 }
@@ -384,14 +409,41 @@ void MainWindow::saveClicked()
 /** randomize now trigger */
 void MainWindow::randomClicked()
 {
-//  QMessageBox::warning(this,"Random Player","the Random now was triggered");
+//  QMessageBox::warning(this,"SlideShow","the Random now was triggered");
+  randomizerClicked();
 }
 
 //-----------------------------------------------------------------------------------------
 /** toggle randomizer switch */
 void MainWindow::randomizerClicked()
 {
-//  QMessageBox::warning(this,"Random Player","the Randomize switch was triggered");
+  stopTimer();
+
+  // let's not randomize the master playlist
+  ui->doneList->clear();
+  ui->currentList->clear();
+  ui->currentList->addItems(playlist);
+
+  // remove image from doneList randomly and add it to currentList
+  // note: you could fill the doneList and rnd move to currentList -
+  // but doing so would cause the last image to become the first
+  // image for the next go around - don't know why ...
+  while(ui->currentList->count())
+  {
+    srand(time(0));
+    int random=rand()%(ui->currentList->count());
+    QListWidgetItem *item = ui->currentList->takeItem(random);
+    ui->doneList->addItem(item->text());
+    delete item;
+  }
+
+  // move list from doneList to currentList
+  while(ui->doneList->count())
+  {
+    QListWidgetItem *item = ui->doneList->takeItem(0);
+    ui->currentList->addItem(item->text());
+    delete item;
+  }
 
 }
 

@@ -86,8 +86,8 @@ private slots:
   /** toggle play loop switch */
   void loopClicked();
   /** Spawn contextual menu (right mouse menu) */
-  void contextualMenu(const QPoint &point);
-//  void contextualMenu(QContextMenuEvent *event);
+//  void contextualMenu(const QPoint &point);
+  void contextualMenu();
 
 };
 
