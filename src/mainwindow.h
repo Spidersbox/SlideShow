@@ -80,12 +80,10 @@ private slots:
   void editClicked();
   /** save playlist */
   void saveClicked();
+
   /** randomize now trigger */
   void randomClicked();
-  /** toggle randomizer switch */
-//  void randomizerClicked();
-  /** toggle play loop switch */
-//  void loopClicked();
+
   /** Spawn contextual menu (right mouse menu) */
   void contextualMenu();
 

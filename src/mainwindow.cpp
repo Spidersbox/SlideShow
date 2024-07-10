@@ -26,9 +26,9 @@
 #include "mainwindow.h"
 
 
-int i, count, period;
-float anim_period = 0.5;
-bool timer_checker, shuffle_checker, comboBox_checker, image_checker, mouse_click_checker, anim_checker;
+int period;
+//float anim_period = 0.5;
+bool timer_checker;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -193,7 +193,6 @@ void MainWindow::openClicked()
   stopTimer();
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
   showNormal();
-  count = 0;
   QDir imagePath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   QStringList images = imagePath.entryList(QStringList() << "*.jpg" << "*.jpeg" << "*.bmp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.xbm" << "*.xpm" << "*.png", QDir::Files);
 
@@ -206,10 +205,9 @@ void MainWindow::openClicked()
     QString line=imagePath.filePath(filename);
     playlist<<line;
     ui->currentList->addItem(line);
-    count++;
   }
 
-  if (count > 0)
+  if(ui->currentList->count() >0)
   {
     QListWidgetItem *item = ui->currentList->takeItem(0);
     ui->doneList->addItem(item->text());
@@ -433,16 +431,4 @@ void MainWindow::randomClicked()
   }
 }
 
-//-----------------------------------------------------------------------------------------
-/** toggle randomizer switch */
-//void MainWindow::randomizerClicked()
-//{
-
-//}
-
-//-----------------------------------------------------------------------------------------
-/** toggle play loop switch */
-//void MainWindow::loopClicked()
-//{
-//}
 
