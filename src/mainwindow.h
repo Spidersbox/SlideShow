@@ -33,6 +33,7 @@ private:
   QMenuBar *appMenuBar;
   QImage image;
   QMenu *contextMenu;
+  QMenu *mainMenu;
   QAction *openAction;
   QAction *quitAction;
 
@@ -82,11 +83,10 @@ private slots:
   /** randomize now trigger */
   void randomClicked();
   /** toggle randomizer switch */
-  void randomizerClicked();
+//  void randomizerClicked();
   /** toggle play loop switch */
-  void loopClicked();
+//  void loopClicked();
   /** Spawn contextual menu (right mouse menu) */
-//  void contextualMenu(const QPoint &point);
   void contextualMenu();
 
 };

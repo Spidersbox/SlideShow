@@ -20,7 +20,7 @@
   #include <QScreen>
 #endif
 
-#include <QMessageBox> // for debuging
+#include <QMessageBox>
 #include <QDebug>
 
 #include "mainwindow.h"
@@ -42,8 +42,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 // overall height and width of screen (not desktop)
 #if QT_VERSION < 0x060000
   QDesktopWidget *mydesktop = QApplication::desktop();
-  desktopWidth = mydesktop->width(); // pixels;
-  desktopHeight = mydesktop->height(); // pixels;
+  desktopWidth = mydesktop->width();
+  desktopHeight = mydesktop->height();
 #else
 // figure it out later
 #endif
@@ -76,8 +76,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   createMenuBar();
   menuBar()->setNativeMenuBar(false);
 
-//  ui->currentList->setVisible(false);
-//  ui->doneList->setVisible(false);
+  ui->currentList->setVisible(false);
+  ui->doneList->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -110,6 +110,21 @@ void MainWindow::createMenuBar()
   settings->addAction(randomAction);
   settings->addAction(randomizerAction);
   settings->addAction(loopAction);
+
+//  popup context menu
+  mainMenu=new QMenu();
+  QMenu *fileMenu=mainMenu->addMenu(tr("&File"));
+  fileMenu->addAction(openAction);
+  fileMenu->addAction(quitAction);
+
+  QMenu *optionsMenu=mainMenu->addMenu(tr("&Options"));
+  optionsMenu->addAction(pauseAction);
+  optionsMenu->addAction(continueAction);
+
+  QMenu *settingsMenu=mainMenu->addMenu(tr("&Settings"));
+  settingsMenu->addAction(randomAction);
+  settingsMenu->addAction(randomizerAction);
+  settingsMenu->addAction(loopAction);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -153,9 +168,8 @@ void MainWindow::createActions()
 
 //  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
 //  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
+
   connect(randomAction, SIGNAL(triggered()), this, SLOT(randomClicked()));
-  connect(randomizerAction, SIGNAL(triggered()), this, SLOT(randomizerClicked()));
-  connect(loopAction, SIGNAL(triggered()), this, SLOT(loopClicked()));
 
   /** popup menu for form and imageLabel */
   connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint))
@@ -197,7 +211,6 @@ void MainWindow::openClicked()
 
   if (count > 0)
   {
-//    setImage(ui->currentList[0]);
     QListWidgetItem *item = ui->currentList->takeItem(0);
     ui->doneList->addItem(item->text());
     setImage(item->text());
@@ -319,29 +332,12 @@ void MainWindow::stopTimer()
 }
 
 //-----------------------------------------------------------------------------------------
-//void MainWindow::contextualMenu(const QPoint &point)
 void MainWindow::contextualMenu()
 {
-  QMenu mainMenu(this);
-  QMenu *fileMenu=mainMenu.addMenu(tr("&File"));
-  fileMenu->addAction(openAction);
-  fileMenu->addAction(quitAction);
-
-  QMenu *optionsMenu=mainMenu.addMenu(tr("&Options"));
-  optionsMenu->addAction(pauseAction);
-  optionsMenu->addAction(continueAction);
-
-  QMenu *settingsMenu=mainMenu.addMenu(tr("&Settings"));
-  settingsMenu->addAction(randomAction);
-  settingsMenu->addAction(randomizerAction);
-  settingsMenu->addAction(loopAction);
-
-
-  mainMenu.exec(QCursor::pos());
+  mainMenu->exec(QCursor::pos());
 }
 
 //-----------------------------------------------------------------------------------------
-
 /** pause the slideshow */
 void MainWindow::pauseClicked()
 {
@@ -352,7 +348,6 @@ void MainWindow::pauseClicked()
 }
 
 //-----------------------------------------------------------------------------------------
-
 /** continue the slideshow */
 void MainWindow::continueClicked()
 {
@@ -409,14 +404,6 @@ void MainWindow::saveClicked()
 /** randomize now trigger */
 void MainWindow::randomClicked()
 {
-//  QMessageBox::warning(this,"SlideShow","the Random now was triggered");
-  randomizerClicked();
-}
-
-//-----------------------------------------------------------------------------------------
-/** toggle randomizer switch */
-void MainWindow::randomizerClicked()
-{
   stopTimer();
 
   // let's not randomize the master playlist
@@ -444,13 +431,18 @@ void MainWindow::randomizerClicked()
     ui->currentList->addItem(item->text());
     delete item;
   }
-
 }
 
 //-----------------------------------------------------------------------------------------
+/** toggle randomizer switch */
+//void MainWindow::randomizerClicked()
+//{
+
+//}
+
+//-----------------------------------------------------------------------------------------
 /** toggle play loop switch */
-void MainWindow::loopClicked()
-{
-//  QMessageBox::warning(this,"Random Player","the loop switch was triggered");
-}
+//void MainWindow::loopClicked()
+//{
+//}
 
