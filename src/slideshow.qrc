@@ -5,6 +5,7 @@
     <file alias="bt_open">images/open.png</file>
     <file alias="bt_pause">images/pause.png</file>
     <file alias="bt_play">images/play.png</file>
+    <file alias="bt_next">images/next.png</file>
     <file alias="bt_close">images/close.png</file>
     <file alias="bt_shuffle">images/shuffle.png</file>
     <file alias="bt_repeat">images/repeat.png</file>

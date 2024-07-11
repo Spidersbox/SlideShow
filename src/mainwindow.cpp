@@ -9,6 +9,7 @@
 #include <iostream>
 #include <QContextMenuEvent>
 #include <QListWidget>
+#include <QMovie>
 
 #include <QIcon>
 #include <QStyle>
@@ -120,6 +121,8 @@ void MainWindow::createMenuBar()
   QMenu *optionsMenu=mainMenu->addMenu(tr("&Options"));
   optionsMenu->addAction(pauseAction);
   optionsMenu->addAction(continueAction);
+  optionsMenu->addSeparator();
+  optionsMenu->addAction(nextAction);
 
   QMenu *settingsMenu=mainMenu->addMenu(tr("&Settings"));
   settingsMenu->addAction(randomAction);
@@ -140,6 +143,8 @@ void MainWindow::createActions()
   pauseAction->setToolTip(tr("Pause slideshow"));
   continueAction = new QAction(QIcon(":/images/bt_play"), tr("&Continue"), this);
   continueAction->setToolTip(tr("Continue slideshow"));
+  nextAction = new QAction(QIcon(":/images/bt_next"), tr("&Next"), this);
+  nextAction->setToolTip(tr("Next image"));
 
 //  editAction = new QAction(QIcon(":/images/bt_edit"), tr("&Edit Playlist"), this);
 //  editAction->setToolTip(tr("open the playlist editor options"));
@@ -165,6 +170,7 @@ void MainWindow::createActions()
 
   connect(pauseAction, SIGNAL(triggered()), this, SLOT(pauseClicked()));
   connect(continueAction, SIGNAL(triggered()), this, SLOT(continueClicked()));
+  connect(nextAction, SIGNAL(triggered()), this, SLOT(nextClicked()));
 
 //  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
 //  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
@@ -194,7 +200,7 @@ void MainWindow::openClicked()
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
   showNormal();
   QDir imagePath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-  QStringList images = imagePath.entryList(QStringList() << "*.jpg" << "*.jpeg" << "*.bmp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.xbm" << "*.xpm" << "*.png", QDir::Files);
+  QStringList images = imagePath.entryList(QStringList() << "*.jpg" << "*.jpeg" << "*.bmp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.xbm" << "*.xpm" << "*.png" << "*.gif", QDir::Files);
 
   playlist.clear();
   ui->currentList->clear();
@@ -230,9 +236,32 @@ void MainWindow::setImage(const QString &image)
 //-----------------------------------------------------------------------------------------
 void MainWindow::showImage(QString fileName)
 {
-  QPixmap image = fileName;
-  ui->imageLabel->setPixmap(image);
-  scaleImage();
+  QFileInfo fn(fileName);
+  QString fname = fn.completeSuffix().toLower();
+
+  if(fname=="gif")
+  {
+    QMovie* movie = new QMovie(fileName, QByteArray(), this );
+    if (!movie->isValid())
+    {
+      qDebug() << "Movie is not valid";
+      return;
+    }
+
+// load gif as normal image to get screen size
+    QPixmap image = fileName;
+    ui->imageLabel->setPixmap(image);
+    scaleImage();
+
+    ui->imageLabel->setMovie(movie);
+    movie->start();
+  }
+  else
+  {
+    QPixmap image = fileName;
+    ui->imageLabel->setPixmap(image);
+    scaleImage();
+  }
 }
 
 //-----------------------------------------------------------------------------------------
@@ -302,10 +331,17 @@ void MainWindow::nextImage()
     // randomize playlist and start again  
     if(loopAction->isChecked())
     {
-     if(randomizerAction->isChecked())
+      if(randomizerAction->isChecked())
       {
         randomClicked();
       }
+      else
+      {
+        ui->doneList->clear();
+        ui->currentList->clear();
+        ui->currentList->addItems(playlist);
+      }
+
       // just checking if there are images in the currentList
       if(ui->currentList->count() >0)
       {
@@ -316,6 +352,10 @@ void MainWindow::nextImage()
         setTimer();
       }
     }// endif loopaction
+else
+{
+std::cout<<"loop action IS NOT checked\n";
+}
   }// end else
 }
 
@@ -354,6 +394,14 @@ void MainWindow::continueClicked()
     menuBar()->setVisible(false);
   showFullScreen();
   setTimer();
+}
+
+//-----------------------------------------------------------------------------------------
+/** next image */
+void MainWindow::nextClicked()
+{
+  stopTimer();
+  nextImage();
 }
 
 //-----------------------------------------------------------------------------------------

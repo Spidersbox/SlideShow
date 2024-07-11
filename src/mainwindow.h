@@ -39,6 +39,7 @@ private:
 
   QAction *pauseAction;
   QAction *continueAction;
+  QAction *nextAction;
 
   /** playlist submenu options */
 //  QAction *editAction;
@@ -75,6 +76,7 @@ private slots:
   /** play options */
   void pauseClicked();
   void continueClicked();
+  void nextClicked();
 
   /** show playlist editor */
   void editClicked();
