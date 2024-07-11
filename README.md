@@ -1,4 +1,4 @@
-<b>SlideShowSimple</b>
+<b>SlideShow</b>
 <br>
 <br>
 Sideshow app to show images like a digital picture frame.<br>
