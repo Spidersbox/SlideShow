@@ -29,6 +29,8 @@ private:
   double scaleFactor;
   int desktopWidth;
   int desktopHeight;
+  int appWidth;
+  int appHeight;
 
   QMenuBar *appMenuBar;
   QImage image;
@@ -47,6 +49,7 @@ private:
   QAction *randomAction;
   QAction *randomizerAction;
   QAction *loopAction;
+  QAction *fullScreenAction;
 
   /** Create the main UI actions. */
   void createActions();
@@ -85,6 +88,10 @@ private slots:
 
   /** randomize now trigger */
   void randomClicked();
+
+  /** full screen switch */
+  void fullScreenClicked();
+
 
   /** Spawn contextual menu (right mouse menu) */
   void contextualMenu();

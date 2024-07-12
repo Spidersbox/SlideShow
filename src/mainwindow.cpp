@@ -28,8 +28,8 @@
 
 
 int period;
-//float anim_period = 0.5;
 bool timer_checker;
+QString current_fileName;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -57,9 +57,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 #else
   QScreen *screen = QGuiApplication::primaryScreen();
   QRect  screenGeometry = screen->geometry();
-  int height = screenGeometry.height()/2;
-  int width = screenGeometry.width()/2;
-  move(width-340,height-285);
+  appWidth = screenGeometry.width()/2;
+  appHeight = screenGeometry.height()/2;
+  move(AppWidth-340,appHeight-285);
 #endif
 
 
@@ -79,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
   ui->currentList->setVisible(false);
   ui->doneList->setVisible(false);
+
 }
 
 MainWindow::~MainWindow()
@@ -111,6 +112,7 @@ void MainWindow::createMenuBar()
   settings->addAction(randomAction);
   settings->addAction(randomizerAction);
   settings->addAction(loopAction);
+  settings->addAction(fullScreenAction);
 
 //  popup context menu
   mainMenu=new QMenu();
@@ -128,6 +130,7 @@ void MainWindow::createMenuBar()
   settingsMenu->addAction(randomAction);
   settingsMenu->addAction(randomizerAction);
   settingsMenu->addAction(loopAction);
+  settingsMenu->addAction(fullScreenAction);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -139,12 +142,16 @@ void MainWindow::createActions()
   quitAction = new QAction(QIcon(":/images/bt_close"), tr("E&xit"), this);
   quitAction->setToolTip(tr("Quit application"));
 
+/** setting switches */
   pauseAction = new QAction(QIcon(":/images/bt_pause"), tr("&Pause"), this);
   pauseAction->setToolTip(tr("Pause slideshow"));
   continueAction = new QAction(QIcon(":/images/bt_play"), tr("&Continue"), this);
   continueAction->setToolTip(tr("Continue slideshow"));
   nextAction = new QAction(QIcon(":/images/bt_next"), tr("&Next"), this);
   nextAction->setToolTip(tr("Next image"));
+  fullScreenAction = new QAction(QIcon(":/images/bt_arrows-out"), tr("&Full screen"), this);
+  fullScreenAction->setToolTip(tr("switch full screen"));
+  fullScreenAction->setCheckable(true);
 
 //  editAction = new QAction(QIcon(":/images/bt_edit"), tr("&Edit Playlist"), this);
 //  editAction->setToolTip(tr("open the playlist editor options"));
@@ -164,7 +171,7 @@ void MainWindow::createActions()
 
 
 
-  /** main menu signals */
+  /** popup menu signals */
   connect(openAction, SIGNAL(triggered()), this, SLOT(openClicked()));
   connect(quitAction, SIGNAL(triggered()), this, SLOT(quitClicked()));
 
@@ -175,9 +182,10 @@ void MainWindow::createActions()
 //  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
 //  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
 
+  connect(fullScreenAction, SIGNAL(triggered()), this, SLOT(fullScreenClicked()));
   connect(randomAction, SIGNAL(triggered()), this, SLOT(randomClicked()));
 
-  /** popup menu for form and imageLabel */
+  /** to open popup menu for form and imageLabel */
   connect(ui->imageLabel, SIGNAL(customContextMenuRequested(QPoint))
          ,this, SLOT(contextualMenu()));
   connect(this, SIGNAL(customContextMenuRequested(QPoint))
@@ -230,15 +238,16 @@ void MainWindow::openClicked()
 //-----------------------------------------------------------------------------------------
 void MainWindow::setImage(const QString &image)
 {
+  current_fileName=image;
   showImage(image);
 }
 
 //-----------------------------------------------------------------------------------------
 void MainWindow::showImage(QString fileName)
 {
+//std::cout<<"fileName = "<<fileName.toStdString()<<"\n";
   QFileInfo fn(fileName);
   QString fname = fn.completeSuffix().toLower();
-
   if(fname=="gif")
   {
     QMovie* movie = new QMovie(fileName, QByteArray(), this );
@@ -270,11 +279,21 @@ void MainWindow::scaleImage()
   int screenWidth=desktopWidth;
   int screenHeight=desktopHeight;
 
+
+//  menuBar()->setVisible(false);
+  if(fullScreenAction->isChecked())
+  {
+    showFullScreen();
+  }
+  else
+  {
+    showNormal();
+    screenWidth=width();
+    screenHeight=height();
+  }
+
   int imageWidth=ui->imageLabel->pixmap()->width();
   int imageHeight=ui->imageLabel->pixmap()->height();
-
-  menuBar()->setVisible(false);
-  showFullScreen();
 
   float iWidth;
   float iHeight;
@@ -349,7 +368,6 @@ void MainWindow::nextImage()
         ui->doneList->addItem(item->text());
         setImage(item->text());
         delete item;
-        setTimer();
       }
     }// endif loopaction
 else
@@ -380,7 +398,10 @@ void MainWindow::contextualMenu()
 void MainWindow::pauseClicked()
 {
   stopTimer();
+  if(!fullScreenAction->isChecked())
+  {
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
+  }
   menuBar()->setVisible(true);
   showNormal();
 }
@@ -390,9 +411,12 @@ void MainWindow::pauseClicked()
 void MainWindow::continueClicked()
 {
   period=10;
-  this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
-    menuBar()->setVisible(false);
-  showFullScreen();
+  menuBar()->setVisible(false);
+  if(fullScreenAction->isChecked())
+  {
+    this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
+    showFullScreen();
+  }
   setTimer();
 }
 
@@ -402,6 +426,26 @@ void MainWindow::nextClicked()
 {
   stopTimer();
   nextImage();
+}
+
+//-----------------------------------------------------------------------------------------
+/** full screen switch */
+void MainWindow::fullScreenClicked()
+{
+  if(fullScreenAction->isChecked())
+  {
+    fullScreenAction->setIcon(QIcon(":/images/bt_arrows-out"));
+    this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
+    menuBar()->setVisible(false);
+    showImage(current_fileName);
+  }
+  else
+  {
+    fullScreenAction->setIcon(QIcon(":/images/bt_arrows-in"));
+    this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
+    menuBar()->setVisible(true);
+    showImage(current_fileName);
+  }
 }
 
 //-----------------------------------------------------------------------------------------
@@ -450,7 +494,8 @@ void MainWindow::saveClicked()
 /** randomize now trigger */
 void MainWindow::randomClicked()
 {
-  stopTimer();
+std::cout<<"randomClicked triggered\n";
+//  stopTimer();
 
   // let's not randomize the master playlist
   ui->doneList->clear();

@@ -2,6 +2,7 @@
   <qresource prefix="/images">
     <file alias="slideshow">images/slideshow.png</file>
     <file alias="favicon">images/favicon.ico</file>
+    <file alias="dot">images/favicon.ico</file>
     <file alias="bt_open">images/open.png</file>
     <file alias="bt_pause">images/pause.png</file>
     <file alias="bt_play">images/play.png</file>
@@ -9,5 +10,7 @@
     <file alias="bt_close">images/close.png</file>
     <file alias="bt_shuffle">images/shuffle.png</file>
     <file alias="bt_repeat">images/repeat.png</file>
+    <file alias="bt_arrows-in">images/arrows-in.png</file>
+    <file alias="bt_arrows-out">images/arrows-out.png</file>
   </qresource>
 </RCC>
