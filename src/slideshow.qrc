@@ -8,6 +8,8 @@
     <file alias="bt_play">images/play.png</file>
     <file alias="bt_next">images/next.png</file>
     <file alias="bt_close">images/close.png</file>
+    <file alias="bt_edit">images/edit.png</file>
+    <file alias="bt_save">images/save.png</file>
     <file alias="bt_shuffle">images/shuffle.png</file>
     <file alias="bt_repeat">images/repeat.png</file>
     <file alias="bt_arrows-in">images/arrows-in.png</file>

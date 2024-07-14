@@ -10,6 +10,8 @@
 #include <QContextMenuEvent>
 #include <QListWidget>
 #include <QMovie>
+#include <QTextStream>
+
 
 #include <QIcon>
 #include <QStyle>
@@ -25,6 +27,7 @@
 #include <QDebug>
 
 #include "mainwindow.h"
+#include "editform.h"
 
 
 int period;
@@ -101,13 +104,14 @@ void MainWindow::createMenuBar()
 
   /** Configure the menus */
   QMenu *file = appMenuBar->addMenu(tr("&File"));
-  file->addAction(openAction);
+  file->addAction(openFolderAction);
+  file->addAction(openPlayListAction);
   file->addAction(quitAction);
 
   QMenu *settings = appMenuBar->addMenu(tr("&Options"));
-//  QMenu *submenu=settings->addMenu("&Playlist");
-//  submenu->addAction(editAction);
-//  submenu->addAction(saveAction);
+  QMenu *submenu=settings->addMenu("&Playlist");
+  submenu->addAction(editAction);
+  submenu->addAction(saveAction);
 
   settings->addAction(randomAction);
   settings->addAction(randomizerAction);
@@ -117,7 +121,8 @@ void MainWindow::createMenuBar()
 //  popup context menu
   mainMenu=new QMenu();
   QMenu *fileMenu=mainMenu->addMenu(tr("&File"));
-  fileMenu->addAction(openAction);
+  fileMenu->addAction(openFolderAction);
+  fileMenu->addAction(openPlayListAction);
   fileMenu->addAction(quitAction);
 
   QMenu *optionsMenu=mainMenu->addMenu(tr("&Options"));
@@ -137,8 +142,10 @@ void MainWindow::createMenuBar()
 void MainWindow::createActions()
 {
   /** main menu actions */
-  openAction = new QAction(QIcon(":/images/bt_open"), tr("&Open"), this);
-  openAction->setToolTip(tr("Open a playlist file"));
+  openFolderAction = new QAction(QIcon(":/images/bt_open"), tr("open &Folder"), this);
+  openFolderAction->setToolTip(tr("Open a Folder to display"));
+  openPlayListAction = new QAction(QIcon(":/images/bt_open"), tr("open &Playlist"), this);
+  openPlayListAction->setToolTip(tr("Open a Playlist to display"));
   quitAction = new QAction(QIcon(":/images/bt_close"), tr("E&xit"), this);
   quitAction->setToolTip(tr("Quit application"));
 
@@ -153,10 +160,10 @@ void MainWindow::createActions()
   fullScreenAction->setToolTip(tr("switch full screen"));
   fullScreenAction->setCheckable(true);
 
-//  editAction = new QAction(QIcon(":/images/bt_edit"), tr("&Edit Playlist"), this);
-//  editAction->setToolTip(tr("open the playlist editor options"));
-//  saveAction = new QAction(QIcon(":/images/bt_save"), tr("&Save Playlist"), this);
-//  saveAction->setToolTip(tr("save the playlist"));
+  editAction = new QAction(QIcon(":/images/bt_edit"), tr("&Edit Playlist"), this);
+  editAction->setToolTip(tr("open the playlist editor options"));
+  saveAction = new QAction(QIcon(":/images/bt_save"), tr("&Save Playlist"), this);
+  saveAction->setToolTip(tr("save the playlist"));
 
   randomAction = new QAction(QIcon(":/images/bt_shuffle"), tr("&Shuffle (do it NOW)"), this);
   randomAction->setToolTip(tr("randomize the playlist now"));
@@ -172,15 +179,16 @@ void MainWindow::createActions()
 
 
   /** popup menu signals */
-  connect(openAction, SIGNAL(triggered()), this, SLOT(openClicked()));
+  connect(openFolderAction, SIGNAL(triggered()), this, SLOT(openFolderClicked()));
+  connect(openPlayListAction, SIGNAL(triggered()), this, SLOT(openPlayListClicked()));
   connect(quitAction, SIGNAL(triggered()), this, SLOT(quitClicked()));
 
   connect(pauseAction, SIGNAL(triggered()), this, SLOT(pauseClicked()));
   connect(continueAction, SIGNAL(triggered()), this, SLOT(continueClicked()));
   connect(nextAction, SIGNAL(triggered()), this, SLOT(nextClicked()));
 
-//  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
-//  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
+  connect(editAction, SIGNAL(triggered()), this, SLOT(editClicked()));
+  connect(saveAction, SIGNAL(triggered()), this, SLOT(saveClicked()));
 
   connect(fullScreenAction, SIGNAL(triggered()), this, SLOT(fullScreenClicked()));
   connect(randomAction, SIGNAL(triggered()), this, SLOT(randomClicked()));
@@ -201,8 +209,59 @@ void MainWindow::quitClicked()
 }
 
 //-----------------------------------------------------------------------------------------
+/** Show open Playlist dialog */
+void MainWindow::openPlayListClicked()
+{
+std::cout<<" open playlist triggered\n";
+  this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
+  showNormal();
+
+  QString filename=QFileDialog::getOpenFileName(
+              this,"Open Playlist",qApp->applicationDirPath(),
+              "playlist files (*.p3u)");
+
+  QFile file(filename);
+  if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+  {
+    stopTimer();
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+    playlist.clear();
+    ui->currentList->clear();
+    ui->doneList->clear();
+
+    QTextStream textStream(&file);
+    while (!textStream.atEnd())
+    {
+      QString line=textStream.readLine();
+      playlist<<line;
+      ui->currentList->addItem(line);
+    }
+    file.close();
+    QApplication::restoreOverrideCursor();
+
+    if(ui->currentList->count() >0)
+    {
+      QListWidgetItem *item = ui->currentList->takeItem(0);
+      ui->doneList->addItem(item->text());
+      setImage(item->text());
+      delete item;
+      menuBar()->setVisible(false);
+      period=10;
+      this->setStyleSheet("background:rgb(0, 0, 0); color:rgb(255,255,255);");
+      setTimer();
+    }
+  }
+  else
+  {
+    QString mess="Could not open file: "+filename;
+    QMessageBox::warning(this,"SlideShow",mess);
+  }
+}
+
+//-----------------------------------------------------------------------------------------
 /** Show open file dialog */
-void MainWindow::openClicked()
+void MainWindow::openFolderClicked()
 {
   stopTimer();
   this->setStyleSheet("background:rgb(250,250,250); color:rgb(0,0,0);");
@@ -452,12 +511,12 @@ void MainWindow::fullScreenClicked()
 /** Open playlist editor dialog */
 void MainWindow::editClicked()
 {
-//  EditForm *dialog = new EditForm();
+  EditForm *dialog = new EditForm();
   /** for retrieving data from editform to mainform */
-//  connect(dialog, SIGNAL(sendData(QStringList)), this, SLOT(printData(QStringList)));
+  connect(dialog, SIGNAL(sendData(QStringList)), this, SLOT(printData(QStringList)));
 
-//  dialog->receivePlaylist(playlist);
-//  dialog->show();
+  dialog->receivePlaylist(playlist);
+  dialog->show();
 
 }
 
@@ -465,17 +524,19 @@ void MainWindow::editClicked()
 /** save playlist to a file */
 void MainWindow::saveClicked()
 {
-/*
-  QString filename = QFileDialog::getSaveFileName(this, tr("save as"), "/", tr("playlist files(*.m3u)"));
+  QString filename = QFileDialog::getSaveFileName(this, tr("save as"), "/", tr("playlist files(*.p3u)"));
   if (filename.isEmpty())
+  {
+std::cout<<"error opening save file\n";
     return;
+  }
 
   // check for extension
   // windows will add the extension
   // ubuntu will not
-  int x=filename.indexOf("m3u");
+  int x=filename.indexOf("p3u");
   if(x<1)
-    filename=filename+".m3u";
+    filename=filename+".p3u";
 
   QFile file(filename);
   //Open the file
@@ -487,7 +548,18 @@ void MainWindow::saveClicked()
     out<<playlist[i]<<"\n";
 
   file.close();
-*/
+
+}
+
+//-----------------------------------------------------------------------------------------
+/** recieves playlist from editor */
+void MainWindow::printData(QStringList dat)
+{
+//  stopClicked();
+  playlist=dat; // keep a copy of the playlist
+  ui->doneList->clear();
+  ui->currentList->clear();
+  ui->currentList->addItems(dat);
 }
 
 //-----------------------------------------------------------------------------------------

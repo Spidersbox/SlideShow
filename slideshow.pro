@@ -11,12 +11,15 @@ OBJECTS_DIR = build
 MOC_DIR = build
 UI_DIR = build
 
- HEADERS =src/mainwindow.h
+ HEADERS =src/mainwindow.h \
+          src/editform.h
 
  SOURCES =src/main.cpp \
-     src/mainwindow.cpp
+     src/mainwindow.cpp \
+     src/editform.cpp
 
-FORMS = src/forms/mainwindow.ui
+FORMS = src/forms/mainwindow.ui \
+        src/forms/editform.ui
 
 RC_FILE = src/slideshow.rc
 

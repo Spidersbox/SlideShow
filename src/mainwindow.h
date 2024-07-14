@@ -36,7 +36,8 @@ private:
   QImage image;
   QMenu *contextMenu;
   QMenu *mainMenu;
-  QAction *openAction;
+  QAction *openFolderAction;
+  QAction *openPlayListAction;
   QAction *quitAction;
 
   QAction *pauseAction;
@@ -44,8 +45,8 @@ private:
   QAction *nextAction;
 
   /** playlist submenu options */
-//  QAction *editAction;
-//  QAction *saveAction;
+  QAction *editAction;
+  QAction *saveAction;
   QAction *randomAction;
   QAction *randomizerAction;
   QAction *loopAction;
@@ -60,7 +61,6 @@ private:
   void showImage(QString filen);
   void setImage(const QString &image);
   void nextImage();
-//  void scaleImage(double factor);
   void scaleImage();
 
   void setTimer();
@@ -71,8 +71,10 @@ private:
 private slots:
   void timerTriggered();
 
-  /** Show open file dialog */
-  void openClicked();
+  /** Show open Folder dialog */
+  void openFolderClicked();
+  /** Show open PlayList dialog */
+  void openPlayListClicked();
   /** exit this app */
   void quitClicked();
 
@@ -92,6 +94,7 @@ private slots:
   /** full screen switch */
   void fullScreenClicked();
 
+  void printData(QStringList);
 
   /** Spawn contextual menu (right mouse menu) */
   void contextualMenu();
