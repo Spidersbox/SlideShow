@@ -109,7 +109,8 @@ void MainWindow::createMenuBar()
   file->addAction(quitAction);
 
   QMenu *settings = appMenuBar->addMenu(tr("&Options"));
-  QMenu *submenu=settings->addMenu("&Playlist");
+  QMenu *submenu=settings->addMenu(QIcon(":/images/bt_playlist"),"&Playlist");
+  submenu->addAction(openPlayListSubAction);
   submenu->addAction(editAction);
   submenu->addAction(saveAction);
 
@@ -144,8 +145,13 @@ void MainWindow::createActions()
   /** main menu actions */
   openFolderAction = new QAction(QIcon(":/images/bt_open"), tr("open &Folder"), this);
   openFolderAction->setToolTip(tr("Open a Folder to display"));
+
   openPlayListAction = new QAction(QIcon(":/images/bt_open"), tr("open &Playlist"), this);
   openPlayListAction->setToolTip(tr("Open a Playlist to display"));
+
+  openPlayListSubAction = new QAction(QIcon(":/images/bt_open"), tr("open &Playlist"), this);
+  openPlayListSubAction->setToolTip(tr("Open a Playlist to display"));
+
   quitAction = new QAction(QIcon(":/images/bt_close"), tr("E&xit"), this);
   quitAction->setToolTip(tr("Quit application"));
 
@@ -181,6 +187,7 @@ void MainWindow::createActions()
   /** popup menu signals */
   connect(openFolderAction, SIGNAL(triggered()), this, SLOT(openFolderClicked()));
   connect(openPlayListAction, SIGNAL(triggered()), this, SLOT(openPlayListClicked()));
+  connect(openPlayListSubAction, SIGNAL(triggered()), this, SLOT(openPlayListClicked()));
   connect(quitAction, SIGNAL(triggered()), this, SLOT(quitClicked()));
 
   connect(pauseAction, SIGNAL(triggered()), this, SLOT(pauseClicked()));

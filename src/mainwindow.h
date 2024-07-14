@@ -38,6 +38,7 @@ private:
   QMenu *mainMenu;
   QAction *openFolderAction;
   QAction *openPlayListAction;
+  QAction *openPlayListSubAction;
   QAction *quitAction;
 
   QAction *pauseAction;
@@ -66,7 +67,6 @@ private:
   void setTimer();
   void stopTimer();
 
-//  void contextMenuEvent(QContextMenuEvent *event);
 
 private slots:
   void timerTriggered();
